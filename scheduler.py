@@ -22,11 +22,11 @@ with open(r'config.json','r',encoding='utf-8') as f:
     LNG = config['Position']['LNG']
     LAT = config['Position']['LAT']
 
+# 使用schtasks命令更新计划任务
 def update_task_scheduler(sunrise, sunset):
-    """使用schtasks命令更新计划任务"""
     # 删除旧任务
-    subprocess.run('schtasks /delete /tn "AutoThemeSwitch\\Switch_light" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    subprocess.run('schtasks /delete /tn "AutoThemeSwitch\\Switch_dark" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    subprocess.run(f'schtasks /delete /tn "AutoThemeSwitch\\mode_light" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    subprocess.run(f'schtasks /delete /tn "AutoThemeSwitch\\mode_dark" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     # 创建新任务
     def create_task(name, time, mode):
         task_name = rf"\AutoThemeSwitch\{name}"
@@ -93,12 +93,9 @@ def update_task_scheduler(sunrise, sunset):
 
         os.remove(temp_xml)
 
-        # print(f"计划任务 {task_name} 已创建完成。")
-
-
     # 更新任务
-    create_task("Switch_light", sunrise, "light")
-    create_task("Switch_dark", sunset, "dark")
+    create_task("mode_light", sunrise, "light")
+    create_task("mode_dark", sunset, "dark")
 
 def outTimefile():
     # 获取次日的日出日落时间

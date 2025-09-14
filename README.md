@@ -36,13 +36,15 @@ py Start_Run.py
 
 `LNG`键值代表经度，`LAT`键值代表纬度。
 
-因为我在广州，所以默认经纬度为广州这边的经纬度。
+因为我在广州，所以代码里默认经纬度为广州这边的经纬度。
 
 **主题路径**
 
 如果自定义了主题，则将主题路径填写到 `config.json` 文件的 `Theme_path` 字段中。
 
 `light_theme_path`键值代表浅色主题路径，`dark_theme_path`键值代表深色主题路径。
+
+记得路径的斜杠`\`要转义一下为双斜杠`\\`，或者替换为正斜杠`/`，不然执行会报错。
 
 >Windows默认主题路径：`C:\Windows\Resources\Themes`
 

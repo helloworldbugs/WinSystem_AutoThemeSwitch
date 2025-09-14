@@ -13,9 +13,11 @@ import sys
 
 # 获取当前用户名
 current_user = os.getlogin()
+print('当前用户名：',current_user)
 
 # 获取当前时间（带本地时区信息）
 current_time = datetime.datetime.now(datetime.timezone.utc).astimezone()
+print('当前时间：',current_time)
 
 # 读取配置文件获取主题路径
 with open('config.json', 'r', encoding='utf-8') as f:
