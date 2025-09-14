@@ -1,7 +1,8 @@
 import subprocess
 import tempfile
 import os
-import scheduler
+import Scheduler
+import SwitchTheme
 
 # 获取当前目录
 pwd = os.getcwd()
@@ -13,12 +14,10 @@ username = result.stdout.strip()
 result_sid = subprocess.run(['whoami', '/user'], capture_output=True, text=True, check=True)
 sid_line = result_sid.stdout.strip().split()[-1]
 
-print(f"用户名: {username}")
-print(f"SID: {sid_line}")
-
-def create_AutoThemeSwitch():
+# 创建计划任务
+def create_SwitchTheme():
   # 任务名称
-  task_name = r"\AutoThemeSwitch\AutoThemeSwitch"
+  task_name = r"\AutoThemeSwitch\SwitchTheme"
 
   # XML 模板
   task_xml = rf"""
@@ -87,9 +86,9 @@ def create_AutoThemeSwitch():
 
   # print(f"计划任务 {task_name} 已创建完成。")
 
-def create_AutoThemeScheduler():
+def create_Scheduler():
   # 任务名称
-  task_name = r"\AutoThemeSwitch\AutoThemeScheduler"
+  task_name = r"\AutoThemeSwitch\Scheduler"
 
   # XML 模板
   task_xml = rf"""
@@ -158,7 +157,8 @@ def create_AutoThemeScheduler():
 
 
 if __name__ == "__main__":
-  create_AutoThemeSwitch()
-  create_AutoThemeScheduler()
-  scheduler.main()
+  create_SwitchTheme()
+  create_Scheduler()
+  Scheduler.main()
+  SwitchTheme.main()
   input("\n完成!!!")

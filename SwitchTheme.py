@@ -5,7 +5,6 @@ import json
 import ctypes
 import time
 import sys
-import scheduler
 
 # 说明
 # 有两种执行方式：
@@ -15,34 +14,22 @@ import scheduler
 # 获取当前用户名
 current_user = os.getlogin()
 
-# 读取 datetime.json 文件
-while True:
-    try:
-        with open(r'datetime.json', 'r') as f:
-            data = json.load(f)
-            break
-    except:
-        print("无法读取 datetime.json 文件")
-        scheduler.outTimefile()
-
 # 获取当前时间（带本地时区信息）
 current_time = datetime.datetime.now(datetime.timezone.utc).astimezone()
 
-print('当前时间：', current_time)
-print('当前用户：',current_user)
+# 读取配置文件获取主题路径
+with open('config.json', 'r', encoding='utf-8') as f:
+    config = json.load(f)
+    light_theme_path = config['Theme_path']['light_theme_path']
+    dark_theme_path = config['Theme_path']['dark_theme_path']
 
-# 根据当前用户名构建主题文件路径
-# windows 的默认主题路径：C:\Windows\Resources\Themes
-light_theme_path = r"C:\\Windows\\resources\\Themes\\aero.theme"
-dark_theme_path  = r"C:\\Windows\\resources\\Themes\\dark.theme"
+# 读取 datetime.json 文件,获取日出和日落时间
+with open(r'datetime.json', 'r') as f:
+    date = json.load(f)
 
-# 用户自定义的主题路径：%homepath%\AppData\Local\Microsoft\Windows\Themes
-# light_theme_path = f'C:\\Users\\{current_user}\\AppData\\Local\\Microsoft\\Windows\\Themes\\自定义-浅色.theme'
-# dark_theme_path  = f'C:\\Users\\{current_user}\\AppData\\Local\\Microsoft\\Windows\\Themes\\自定义-深色.theme'
-
-# 获取日出和日落时间（转换为本地时区）
-sunrise_time = datetime.datetime.fromisoformat(data['results']['sunrise']).astimezone()
-sunset_time = datetime.datetime.fromisoformat(data['results']['sunset']).astimezone()
+# 转换为本地时区
+sunrise_time = datetime.datetime.fromisoformat(date['results']['sunrise']).astimezone()
+sunset_time = datetime.datetime.fromisoformat(date['results']['sunset']).astimezone()
 
 sunrise_time += datetime.timedelta(minutes=30)  # 日出时间延迟30分钟
 sunset_time -= datetime.timedelta(minutes=30)   # 日落时间提前30分钟
@@ -77,10 +64,7 @@ def theme_contrast():
     expected_mode = "light" if (sunrise_time <= current_time_only < sunset_time) else "dark"
 
     # 查询注册表当前模式
-    result = subprocess.run(
-        'reg query HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize /v AppsUseLightTheme',
-        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-    )
+    result = subprocess.run('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v AppsUseLightTheme',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     current_mode = None
     if "0x1" in result.stdout:   # 1 = 浅色
@@ -106,7 +90,7 @@ def theme_contrast():
     return current_theme, expected_theme
 
 
-def main(themes_path):
+def theme_switch(themes_path):
     i = 0
     while True:
         if theme_contrast()[0] == themes_path:
@@ -136,11 +120,10 @@ def kill_settings_panel():
             subprocess.run('taskkill /f /im "SystemSettings.exe"', shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         time.sleep(0.1)
 
-if __name__=='__main__':
-
+def main():
     if len(sys.argv) == 1:
         print("参数为空,按照时间条件执行")
-        main(theme_contrast()[1])
+        theme_switch(theme_contrast()[1])
     else:
         if "--mode" in sys.argv:
             try:
@@ -148,10 +131,10 @@ if __name__=='__main__':
                 mode_value = sys.argv[mode_index]
                 if mode_value == "light":
                     print("使用参数指定更改到浅色主题")
-                    main(light_theme_path)
+                    theme_switch(light_theme_path)
                 elif mode_value == "dark":
                     print("使用参数指定更改到深色主题")
-                    main(dark_theme_path)
+                    theme_switch(dark_theme_path)
                 else:
                     print('参数错误')
             except IndexError:
@@ -159,4 +142,6 @@ if __name__=='__main__':
         else:
             print("未识别的参数")
 
+if __name__=='__main__':
+    main()
     sys.exit(0)

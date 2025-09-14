@@ -10,32 +10,23 @@ import sys
 pwd = os.getcwd()
 
 # 获取用户名和 SID
-result = subprocess.run(['whoami'], capture_output=True, text=True, check=True)
+result = subprocess.run(['whoami'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 username = result.stdout.strip()
 
-result_sid = subprocess.run(['whoami', '/user'], capture_output=True, text=True, check=True)
+result_sid = subprocess.run(['whoami', '/user'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 sid_line = result_sid.stdout.strip().split()[-1]
 
-print(f"用户名: {username}")
-print(f"SID: {sid_line}")
-
-# 配置经纬度
-LNG = 113.32446000000004  # 替换为你的经度
-LAT = 23.106469999999987   # 替换为你的纬度
+# 读取配置文件,获取经纬度信息
+with open(r'config.json','r',encoding='utf-8') as f:
+    config = json.load(f)
+    LNG = config['Position']['LNG']
+    LAT = config['Position']['LAT']
 
 def update_task_scheduler(sunrise, sunset):
     """使用schtasks命令更新计划任务"""
     # 删除旧任务
-    subprocess.run(
-        'schtasks /delete /tn "AutoThemeSwitch\\Switch_light" /f',
-        shell=True,
-        stdout=subprocess.PIPE
-    )
-    subprocess.run(
-        'schtasks /delete /tn "AutoThemeSwitch\\Switch_dark" /f',
-        shell=True,
-        stdout=subprocess.PIPE
-    )
+    subprocess.run('schtasks /delete /tn "AutoThemeSwitch\\Switch_light" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    subprocess.run('schtasks /delete /tn "AutoThemeSwitch\\Switch_dark" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     # 创建新任务
     def create_task(name, time, mode):
         task_name = rf"\AutoThemeSwitch\{name}"
@@ -88,6 +79,7 @@ def update_task_scheduler(sunrise, sunset):
             <Exec>
             <Command>pythonw.exe</Command>
             <Arguments>"{pwd}\SwitchTheme.py" --mode {mode}</Arguments>
+            <WorkingDirectory>{pwd}</WorkingDirectory>
             </Exec>
         </Actions>
         </Task>
@@ -97,7 +89,7 @@ def update_task_scheduler(sunrise, sunset):
             f.write(task_xml)
             temp_xml = f.name
 
-        subprocess.run(["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"])
+        subprocess.run(["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         os.remove(temp_xml)
 
@@ -117,7 +109,6 @@ def outTimefile():
             headers={'User-Agent': 'Mozilla/5.0'}
         )
         
-        # data = resp.json()['results']
         if resp.status_code == 200:
             open(r'datetime.json','w+',encoding='utf-8').write(resp.text)
             print("日出日落时间更新成功")
