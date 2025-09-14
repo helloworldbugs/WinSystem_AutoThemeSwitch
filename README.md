@@ -45,6 +45,7 @@ py Start_Run.py
 `light_theme_path`键值代表浅色主题路径，`dark_theme_path`键值代表深色主题路径。
 
 >Windows默认主题路径：`C:\Windows\Resources\Themes`
+
 >用户自定义的主题路径：`%homepath%\AppData\Local\Microsoft\Windows\Themes`
 
 # 已知缺陷
