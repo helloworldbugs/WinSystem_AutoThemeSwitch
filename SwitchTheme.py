@@ -5,6 +5,7 @@ import json
 import ctypes
 import time
 import sys
+import re
 
 # 说明
 # 有两种执行方式：
@@ -24,6 +25,11 @@ with open('config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
     light_theme_path = config['Theme_path']['light_theme_path']
     dark_theme_path = config['Theme_path']['dark_theme_path']
+
+if "Users" in light_theme_path and "AppData" in light_theme_path:
+    light_theme_path = re.sub(r'(?<=\\Users\\)[^\\]+(?=\\AppData)', current_user, light_theme_path)
+if "Users" in dark_theme_path and "AppData" in dark_theme_path:
+    dark_theme_path = re.sub(r'(?<=\\Users\\)[^\\]+(?=\\AppData)', current_user, dark_theme_path)
 
 # 读取 datetime.json 文件,获取日出和日落时间
 with open(r'datetime.json', 'r') as f:
