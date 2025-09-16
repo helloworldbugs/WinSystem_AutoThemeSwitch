@@ -161,4 +161,5 @@ if __name__ == "__main__":
   create_Scheduler()
   Scheduler.main()
   SwitchTheme.main()
+  SwitchTheme.theme_file_switch()
   input("\n完成!!!")
