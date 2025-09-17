@@ -161,6 +161,7 @@ def theme_file_switch():
         current_theme_path = result.stdout.split()[-1]
         expected_theme_path = light_theme_path if expected_mode_by_time() == "light" else dark_theme_path
         print('当前主题路径：',current_theme_path)
+        print('期望主题路径：',expected_theme_path)
         return current_theme_path,expected_theme_path
 
     # 检测设置面板是否已经关闭
@@ -182,7 +183,8 @@ def theme_file_switch():
             break
         else:
             print('主题文件路径不一致，切换主题文件')
-            broadcast_setting_change()
+            subprocess.run('start ms-settings:', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            time.sleep(0.5)
             os.startfile(get_theme_path()[1])
             broadcast_setting_change()
             print('当前主题路径：',get_theme_path()[0])
