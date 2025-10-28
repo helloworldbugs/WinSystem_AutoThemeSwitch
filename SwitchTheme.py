@@ -180,7 +180,7 @@ def theme_file_switch():
     while True:
         # 检测主题文件是否一致
         print('检测主题路径是否一致')
-        if get_theme_path()[0] == get_theme_path()[1]:
+        if os.path.normpath(get_theme_path()[0]).lower() == os.path.normpath(get_theme_path()[1]).lower():
             print('主题路径一致，无需切换')
             break
         else:
