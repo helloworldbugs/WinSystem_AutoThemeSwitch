@@ -128,8 +128,8 @@ def main():
     sunrise = datetime.fromisoformat(data['results']['sunrise']).astimezone()
     sunset = datetime.fromisoformat(data['results']['sunset']).astimezone()
 
-    sunrise += timedelta(minutes=30)    # 日出时间延迟30分钟
-    sunset -= timedelta(minutes=30)     # 日落时间提前30分钟
+    # sunrise += timedelta(minutes=30)    # 日出时间延迟30分钟
+    # sunset -= timedelta(minutes=30)     # 日落时间提前30分钟
 
     print(f"日出时间：{sunrise.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"日落时间：{sunset.strftime('%Y-%m-%d %H:%M:%S')}")

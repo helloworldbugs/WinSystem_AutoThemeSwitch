@@ -40,8 +40,10 @@ while True:
 # 获取日出和日落时间（转换为本地时区）
 sunrise_time = datetime.datetime.fromisoformat(data['results']['sunrise']).astimezone()
 sunset_time = datetime.datetime.fromisoformat(data['results']['sunset']).astimezone()
-sunrise_time += datetime.timedelta(minutes=30)
-sunset_time -= datetime.timedelta(minutes=30)
+
+# 添加 30 分钟的偏移量
+# sunrise_time += datetime.timedelta(minutes=30)
+# sunset_time -= datetime.timedelta(minutes=30)
 
 sunrise_time = sunrise_time.time()
 sunset_time = sunset_time.time()
