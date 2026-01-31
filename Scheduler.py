@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import subprocess
 import tempfile
 import os
+import yaml
 import json
 import sys
 
@@ -17,8 +18,8 @@ result_sid = subprocess.run(['whoami', '/user'], shell=True, stdout=subprocess.P
 sid_line = result_sid.stdout.strip().split()[-1]
 
 # 读取配置文件,获取经纬度信息
-with open(r'config.json','r',encoding='utf-8') as f:
-    config = json.load(f)
+with open(r'config.yaml','r',encoding='utf-8') as f:
+    config = yaml.safe_load(f)
     LNG = config['Position']['LNG']
     LAT = config['Position']['LAT']
 

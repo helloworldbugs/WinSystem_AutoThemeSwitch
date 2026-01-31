@@ -1,5 +1,6 @@
 import datetime
 import os
+import yaml
 import json
 import ctypes
 import sys
@@ -17,11 +18,19 @@ import Scheduler
 current_user = os.getlogin()
 print('当前用户：',current_user)
 
-# 读取配置文件获取主题路径
-with open('config.json', 'r', encoding='utf-8') as f:
-    config = json.load(f)
+# 读取配置文件获取主题路径和壁纸路径
+with open('config.yaml', 'r', encoding='utf-8') as f:
+    config = yaml.safe_load(f)
     light_theme_path = config['Theme_path']['light_theme_path']
     dark_theme_path = config['Theme_path']['dark_theme_path']
+    light_wallpaper_path = config['Wallpaper_path']['light_wallpaper_path']
+    dark_wallpaper_path = config['Wallpaper_path']['dark_wallpaper_path']
+
+    # 如果主题路径为空，使用默认路径
+    if not light_theme_path:
+        light_theme_path = r'C:\Windows\Resources\Themes\aero.theme'
+    if not dark_theme_path:
+        dark_theme_path = r'C:\Windows\Resources\Themes\dark.theme'
 
 if "Users" in light_theme_path and "AppData" in light_theme_path:
     light_theme_path = re.sub(r'(?<=\\Users\\)[^\\]+(?=\\AppData)', current_user, light_theme_path)
@@ -120,13 +129,20 @@ def set_wallpaper_by_mode(mode):
             SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE
         )
 
-    theme_file = light_theme_path if mode == "light" else dark_theme_path
-    wp = get_wallpaper_from_theme(theme_file)
+    # 如果用户自定义了壁纸路径，直接使用
+    if mode == "light" and light_wallpaper_path:
+        wp = light_wallpaper_path
+    elif mode == "dark" and dark_wallpaper_path:
+        wp = dark_wallpaper_path
+    else:
+        theme_file = light_theme_path if mode == "light" else dark_theme_path
+        wp = get_wallpaper_from_theme(theme_file)
+
     if wp:
         print(f"切换壁纸: {wp}")
         set_wallpaper(wp)
     else:
-        print(f"未能获取壁纸，主题文件: {theme_file}")
+        print(f"未能获取壁纸")
 
 
 # 设置主题模式（light=True 切浅色，False 切深色）
@@ -153,6 +169,8 @@ def expected_mode_by_time():
     now = datetime.datetime.now(datetime.timezone.utc).astimezone().time()
     return "light" if sunrise_time <= now < sunset_time else "dark"
 
+
+
 # 当前主题文件路径不符合期望的时候切换
 def theme_file_switch():
 
@@ -165,7 +183,6 @@ def theme_file_switch():
         print('当前主题路径：',current_theme_path)
         print('期望主题路径：',expected_theme_path)
         return current_theme_path,expected_theme_path
-
     # 检测设置面板是否已经关闭
     def kill_settings_panel():
         print("正在检测设置面板是否已经关闭...")
@@ -198,7 +215,6 @@ def theme_file_switch():
                 print(error_msg.strip())
                 break
     kill_settings_panel()
-
 
 def main():
     # 按照需求修改注册表切换深浅色主题
