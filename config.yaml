@@ -5,15 +5,13 @@ Position:
   LAT: '23.129162'
 
 Theme_path:
-  # 浅色主题路径，留空则使用默认: C:\Windows\Resources\Themes\aero.theme
-  # C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-浅色.theme
-  light_theme_path: 'C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-浅色.theme'
-  # 深色主题路径，留空则使用默认: C:\Windows\Resources\Themes\dark.theme
-  # C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-深色.theme
-  dark_theme_path: 'C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-深色.theme'
+  # 浅色主题路径，留空则使用系统默认主题
+  light_theme_path: ''
+  # 深色主题路径，留空则使用系统默认主题
+  dark_theme_path: ''
 
 Wallpaper_path:
   # 浅色主题对应的壁纸路径，留空则从主题文件读取
-  light_wallpaper_path: 'C:\Users\alive\Pictures\壁纸\浅色.jpg'
+  light_wallpaper_path: ''
   # 深色主题对应的壁纸路径，留空则从主题文件读取
-  dark_wallpaper_path: 'C:\Users\alive\Pictures\壁纸\深色.jpg'
+  dark_wallpaper_path: ''
