@@ -1,34 +1,51 @@
-import requests
-from datetime import datetime, timedelta
-import subprocess
-import tempfile
-import os
-import yaml
 import json
+import os
+import subprocess
 import sys
+import tempfile
+from datetime import datetime, timedelta
 
-# 获取当前目录
+import requests
+import yaml
+
+
 pwd = os.getcwd()
 
-# 获取用户名和 SID
 result = subprocess.run(['whoami'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 username = result.stdout.strip()
 
 result_sid = subprocess.run(['whoami', '/user'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 sid_line = result_sid.stdout.strip().split()[-1]
 
-# 读取配置文件,获取经纬度信息
-with open(r'config.yaml','r',encoding='utf-8') as f:
+with open(r'config.yaml', 'r', encoding='utf-8') as f:
     config = yaml.safe_load(f)
     LNG = config['Position']['LNG']
     LAT = config['Position']['LAT']
+    time_offset = config.get('Time_offset', {})
+    sunrise_offset_minutes = int(time_offset.get('sunrise_offset_minutes', 0) or 0)
+    sunset_offset_minutes = int(time_offset.get('sunset_offset_minutes', 0) or 0)
 
-# 使用schtasks命令更新计划任务
+
+def apply_time_offset(target_time, offset_minutes):
+    return target_time - timedelta(minutes=offset_minutes)
+
+
 def update_task_scheduler(sunrise, sunset):
-    # 删除旧任务
-    subprocess.run(f'schtasks /delete /tn "AutoThemeSwitch\\mode_light" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    subprocess.run(f'schtasks /delete /tn "AutoThemeSwitch\\mode_dark" /f', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    # 创建新任务
+    subprocess.run(
+        'schtasks /delete /tn "AutoThemeSwitch\\mode_light" /f',
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    subprocess.run(
+        'schtasks /delete /tn "AutoThemeSwitch\\mode_dark" /f',
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
     def create_task(name, time, mode):
         task_name = rf"\AutoThemeSwitch\{name}"
         start_time = time.isoformat()
@@ -90,53 +107,61 @@ def update_task_scheduler(sunrise, sunset):
             f.write(task_xml)
             temp_xml = f.name
 
-        subprocess.run(["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        subprocess.run(
+            ["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"],
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
 
         os.remove(temp_xml)
 
-    # 更新任务
     create_task("mode_light", sunrise, "light")
     create_task("mode_dark", sunset, "dark")
 
+
 def outTimefile():
-    # 获取次日的日出日落时间
     target_date = (datetime.now() + timedelta(days=1)).date().isoformat()
     try:
         resp = requests.get(
             f"https://api.sunrise-sunset.org/json?lat={LAT}&lng={LNG}&formatted=0&date={target_date}",
             headers={'User-Agent': 'Mozilla/5.0'}
         )
-        
-        if resp.status_code == 200:
-            open(r'datetime.json','w+',encoding='utf-8').write(resp.text)
-            print("日出日落时间更新成功")
 
+        if resp.status_code == 200:
+            open(r'datetime.json', 'w+', encoding='utf-8').write(resp.text)
+            print("日出日落时间更新成功")
         else:
-            print('响应码：',resp.status_code)
-            print('响应体：',resp.text)
-            print("获取日出日落时间失败！")
+            print('响应码：', resp.status_code)
+            print('响应体：', resp.text)
+            print("获取日出日落时间失败")
             sys.exit(0)
-    except:
+    except Exception:
         sys.exit(0)
-    # 读取本地缓存的时间文件
-    with open(r'datetime.json','r',encoding='utf-8') as f:
+
+    with open(r'datetime.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data
+
 
 def main():
     data = outTimefile()
 
-    sunrise = datetime.fromisoformat(data['results']['sunrise']).astimezone()
-    sunset = datetime.fromisoformat(data['results']['sunset']).astimezone()
-
-    # sunrise += timedelta(minutes=30)    # 日出时间延迟30分钟
-    # sunset -= timedelta(minutes=30)     # 日落时间提前30分钟
+    sunrise = apply_time_offset(
+        datetime.fromisoformat(data['results']['sunrise']).astimezone(),
+        sunrise_offset_minutes,
+    )
+    sunset = apply_time_offset(
+        datetime.fromisoformat(data['results']['sunset']).astimezone(),
+        sunset_offset_minutes,
+    )
 
     print(f"日出时间：{sunrise.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"日落时间：{sunset.strftime('%Y-%m-%d %H:%M:%S')}")
-    
+
     update_task_scheduler(sunrise, sunset)
-    print(f"已更新计划任务时间！")
+    print("已更新计划任务时间！")
 
 
 if __name__ == "__main__":

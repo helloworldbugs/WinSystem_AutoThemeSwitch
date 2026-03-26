@@ -25,6 +25,9 @@ with open('config.yaml', 'r', encoding='utf-8') as f:
     dark_theme_path = config['Theme_path']['dark_theme_path']
     light_wallpaper_path = config['Wallpaper_path']['light_wallpaper_path']
     dark_wallpaper_path = config['Wallpaper_path']['dark_wallpaper_path']
+    time_offset = config.get('Time_offset', {})
+    sunrise_offset_minutes = int(time_offset.get('sunrise_offset_minutes', 0) or 0)
+    sunset_offset_minutes = int(time_offset.get('sunset_offset_minutes', 0) or 0)
 
     # 如果主题路径为空，使用默认路径
     if not light_theme_path:
@@ -50,9 +53,8 @@ while True:
 sunrise_time = datetime.datetime.fromisoformat(data['results']['sunrise']).astimezone()
 sunset_time = datetime.datetime.fromisoformat(data['results']['sunset']).astimezone()
 
-# 添加 30 分钟的偏移量
-# sunrise_time += datetime.timedelta(minutes=30)
-# sunset_time -= datetime.timedelta(minutes=30)
+sunrise_time -= datetime.timedelta(minutes=sunrise_offset_minutes)
+sunset_time -= datetime.timedelta(minutes=sunset_offset_minutes)
 
 sunrise_time = sunrise_time.time()
 sunset_time = sunset_time.time()
