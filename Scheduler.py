@@ -30,6 +30,20 @@ def apply_time_offset(target_time, offset_minutes):
     return target_time - timedelta(minutes=offset_minutes)
 
 
+def normalize_task_time(target_time, now=None):
+    if now is None:
+        now = datetime.now(target_time.tzinfo)
+
+    # Keep the daily trigger anchored to today's local clock time so Task
+    # Scheduler can still run later today when that time has not passed yet.
+    return now.replace(
+        hour=target_time.hour,
+        minute=target_time.minute,
+        second=target_time.second,
+        microsecond=0,
+    )
+
+
 def update_task_scheduler(sunrise, sunset):
     subprocess.run(
         'schtasks /delete /tn "AutoThemeSwitch\\mode_light" /f',
@@ -74,8 +88,8 @@ def update_task_scheduler(sunrise, sunset):
         </Principals>
         <Settings>
             <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-            <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>
-            <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+            <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+            <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
             <AllowHardTerminate>true</AllowHardTerminate>
             <StartWhenAvailable>false</StartWhenAvailable>
             <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
@@ -90,7 +104,7 @@ def update_task_scheduler(sunrise, sunset):
             <Hidden>false</Hidden>
             <RunOnlyIfIdle>false</RunOnlyIfIdle>
             <WakeToRun>false</WakeToRun>
-            <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+            <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
             <Priority>7</Priority>
         </Settings>
         <Actions Context="Author">
@@ -122,7 +136,7 @@ def update_task_scheduler(sunrise, sunset):
 
 
 def outTimefile():
-    target_date = (datetime.now() + timedelta(days=1)).date().isoformat()
+    target_date = datetime.now().date().isoformat()
     try:
         resp = requests.get(
             f"https://api.sunrise-sunset.org/json?lat={LAT}&lng={LNG}&formatted=0&date={target_date}",
@@ -148,14 +162,14 @@ def outTimefile():
 def main():
     data = outTimefile()
 
-    sunrise = apply_time_offset(
+    sunrise = normalize_task_time(apply_time_offset(
         datetime.fromisoformat(data['results']['sunrise']).astimezone(),
         sunrise_offset_minutes,
-    )
-    sunset = apply_time_offset(
+    ))
+    sunset = normalize_task_time(apply_time_offset(
         datetime.fromisoformat(data['results']['sunset']).astimezone(),
         sunset_offset_minutes,
-    )
+    ))
 
     print(f"日出时间：{sunrise.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"日落时间：{sunset.strftime('%Y-%m-%d %H:%M:%S')}")

@@ -45,7 +45,7 @@ def create_SwitchTheme():
     <Settings>
       <MultipleInstancesPolicy>Parallel</MultipleInstancesPolicy>
       <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-      <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+      <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
       <AllowHardTerminate>true</AllowHardTerminate>
       <StartWhenAvailable>false</StartWhenAvailable>
       <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
@@ -114,7 +114,7 @@ def create_Scheduler():
   <Settings>
     <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
     <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
     <AllowHardTerminate>true</AllowHardTerminate>
     <StartWhenAvailable>false</StartWhenAvailable>
     <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
@@ -152,8 +152,6 @@ def create_Scheduler():
 
   # 删除临时文件
   os.remove(temp_xml)
-
-  # print(f"计划任务 {task_name} 已创建完成。")
 
 
 if __name__ == "__main__":

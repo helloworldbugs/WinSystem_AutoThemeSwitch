@@ -4,18 +4,17 @@ Position:
   # 纬度
   LAT: '23.129162'
 
-# 可配置时间偏移，比如日出提前30分钟配置 30，延后30分钟配置 -30
 Time_offset:
-  # 日出时间偏移
-  sunrise_offset_minutes: 0
-  # 日落时间偏移
-  sunset_offset_minutes: 0
+  # 日出提前30分钟配置30，延后30分钟配置-30
+  sunrise_offset_minutes: -30
+  # 日落提前30分钟配置30，延后30分钟配置-30
+  sunset_offset_minutes: 30
 
 Theme_path:
   # 浅色主题路径，留空则使用系统默认主题
-  light_theme_path: ''
+  light_theme_path: 'C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-浅色.theme'
   # 深色主题路径，留空则使用系统默认主题
-  dark_theme_path: ''
+  dark_theme_path: 'C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-深色.theme'
 
 Wallpaper_path:
   # 浅色主题对应的壁纸路径，留空则从主题文件读取
