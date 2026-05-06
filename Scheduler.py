@@ -11,10 +11,10 @@ import yaml
 
 pwd = os.getcwd()
 
-result = subprocess.run(['whoami'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+result = subprocess.run(['whoami'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='gbk')
 username = result.stdout.strip()
 
-result_sid = subprocess.run(['whoami', '/user'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+result_sid = subprocess.run(['whoami', '/user'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='gbk')
 sid_line = result_sid.stdout.strip().split()[-1]
 
 with open(r'config.yaml', 'r', encoding='utf-8') as f:
@@ -49,15 +49,17 @@ def update_task_scheduler(sunrise, sunset):
         'schtasks /delete /tn "AutoThemeSwitch\\mode_light" /f',
         shell=True,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
         text=True,
+        encoding='gbk',
     )
     subprocess.run(
         'schtasks /delete /tn "AutoThemeSwitch\\mode_dark" /f',
         shell=True,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
         text=True,
+        encoding='gbk',
     )
 
     def create_task(name, time, mode):
@@ -125,8 +127,9 @@ def update_task_scheduler(sunrise, sunset):
             ["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"],
             shell=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
             text=True,
+            encoding='gbk',
         )
 
         os.remove(temp_xml)

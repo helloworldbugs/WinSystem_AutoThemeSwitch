@@ -89,7 +89,7 @@ def get_current_mode():
     try:
         result = subprocess.run(
             'reg query HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize /v AppsUseLightTheme',
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk'
         )
         if "0x1" in result.stdout:
             return "light"
@@ -179,7 +179,7 @@ def theme_file_switch():
     # 获取当前主题路径
     def get_theme_path():
         # 查询注册表当前模式
-        result = subprocess.run('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes" /v CurrentTheme',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes" /v CurrentTheme',shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
         current_theme_path = result.stdout.split()[-1]
         expected_theme_path = light_theme_path if expected_mode_by_time() == "light" else dark_theme_path
         print('当前主题路径：',current_theme_path)
@@ -189,10 +189,10 @@ def theme_file_switch():
     def kill_settings_panel():
         print("正在检测设置面板是否已经关闭...")
         for _ in range(20):
-            result = subprocess.run('tasklist /fi "IMAGENAME eq SystemSettings.exe"', shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            result = subprocess.run('tasklist /fi "IMAGENAME eq SystemSettings.exe"', shell=True,stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
             if "systemsettings.exe" in result.stdout.lower():
                 print("检测到设置面板，将其关闭…")
-                subprocess.run('taskkill /f /im "SystemSettings.exe"', shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                subprocess.run('taskkill /f /im "SystemSettings.exe"', shell=True,stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
             time.sleep(0.1)
 
     i = 0
@@ -204,7 +204,7 @@ def theme_file_switch():
             break
         else:
             print('主题文件路径不一致，切换主题文件')
-            subprocess.run('start ms-settings:', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run('start ms-settings:', shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
             time.sleep(0.5)
             os.startfile(get_theme_path()[1])
             broadcast_setting_change()

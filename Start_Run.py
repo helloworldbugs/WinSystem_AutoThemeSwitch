@@ -8,10 +8,10 @@ import SwitchTheme
 pwd = os.getcwd()
 
 # 获取用户名和 SID
-result = subprocess.run(['whoami'], capture_output=True, text=True, check=True)
+result = subprocess.run(['whoami'], capture_output=True, text=True, check=True, encoding='gbk')
 username = result.stdout.strip()
 
-result_sid = subprocess.run(['whoami', '/user'], capture_output=True, text=True, check=True)
+result_sid = subprocess.run(['whoami', '/user'], capture_output=True, text=True, check=True, encoding='gbk')
 sid_line = result_sid.stdout.strip().split()[-1]
 
 # 创建计划任务
