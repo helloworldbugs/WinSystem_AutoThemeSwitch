@@ -6,15 +6,15 @@ Position:
 
 Time_offset:
   # 日出提前30分钟配置30，延后30分钟配置-30
-  sunrise_offset_minutes: -30
+  sunrise_offset_minutes: 0
   # 日落提前30分钟配置30，延后30分钟配置-30
-  sunset_offset_minutes: 30
+  sunset_offset_minutes: 0
 
 Theme_path:
   # 浅色主题路径，留空则使用系统默认主题
-  light_theme_path: 'C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-浅色.theme'
+  light_theme_path: ''
   # 深色主题路径，留空则使用系统默认主题
-  dark_theme_path: 'C:\Users\alive\AppData\Local\Microsoft\Windows\Themes\自定义-深色.theme'
+  dark_theme_path: ''
 
 Wallpaper_path:
   # 浅色主题对应的壁纸路径，留空则从主题文件读取
