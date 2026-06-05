@@ -70,10 +70,10 @@ Brightness:
   light_brightness:      # 浅色模式亮度
   dark_brightness:       # 深色模式亮度
 ```
->Windows默认主题路径：`C:\Windows\Resources\Themes`
->用户自定义的主题路径：`%homepath%\AppData\Local\Microsoft\Windows\Themes`
+>Windows默认主题路径：`C:\Windows\Resources\Themes\`
+>用户自定义的主题路径：`%userprofile%\AppData\Local\Microsoft\Windows\Themes\`
 
-> 路径用单引号包裹，可直接粘贴 Windows 风格路径，无需反斜杠转义，支持 `%homepath%`、`%userprofile%`、`%appdata%` 等环境变量。
+> 路径用单引号包裹，可直接粘贴 Windows 风格路径，无需反斜杠转义，支持`%userprofile%`、`%appdata%` 等环境变量。
 
 > 每次修改配置文件后，重新执行 `py Start_Run.py` 生效。
 
