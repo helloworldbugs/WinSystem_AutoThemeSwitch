@@ -73,7 +73,7 @@ Brightness:
 >Windows默认主题路径：`C:\Windows\Resources\Themes`
 >用户自定义的主题路径：`%homepath%\AppData\Local\Microsoft\Windows\Themes`
 
-> 路径用单引号包裹，直接粘贴 Windows 风格路径即可，无需手动转义反斜杠。不要用 `%homepath%` 这种环境变量，用完整路径。脚本会自动根据当前用户替换路径中的用户名字段。
+> 路径用单引号包裹，可直接粘贴 Windows 风格路径，无需反斜杠转义，支持 `%homepath%`、`%userprofile%`、`%appdata%` 等环境变量。
 
 > 每次修改配置文件后，重新执行 `py Start_Run.py` 生效。
 

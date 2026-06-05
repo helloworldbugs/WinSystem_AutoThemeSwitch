@@ -25,6 +25,13 @@ with open('config.yaml', 'r', encoding='utf-8') as f:
     dark_theme_path = config['Theme_path']['dark_theme_path']
     light_wallpaper_path = config['Wallpaper_path']['light_wallpaper_path']
     dark_wallpaper_path = config['Wallpaper_path']['dark_wallpaper_path']
+
+    # 展开环境变量（支持 %homepath%、%userprofile% 等）
+    light_theme_path = os.path.expandvars(light_theme_path) if light_theme_path else ''
+    dark_theme_path = os.path.expandvars(dark_theme_path) if dark_theme_path else ''
+    light_wallpaper_path = os.path.expandvars(light_wallpaper_path) if light_wallpaper_path else ''
+    dark_wallpaper_path = os.path.expandvars(dark_wallpaper_path) if dark_wallpaper_path else ''
+
     time_offset = config.get('Time_offset', {})
     sunrise_offset_minutes = int(time_offset.get('sunrise_offset_minutes', 0) or 0)
     sunset_offset_minutes = int(time_offset.get('sunset_offset_minutes', 0) or 0)
