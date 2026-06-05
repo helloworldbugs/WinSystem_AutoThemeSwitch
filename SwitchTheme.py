@@ -28,6 +28,9 @@ with open('config.yaml', 'r', encoding='utf-8') as f:
     time_offset = config.get('Time_offset', {})
     sunrise_offset_minutes = int(time_offset.get('sunrise_offset_minutes', 0) or 0)
     sunset_offset_minutes = int(time_offset.get('sunset_offset_minutes', 0) or 0)
+    brightness_config = config.get('Brightness', {})
+    light_brightness = brightness_config.get('light_brightness')
+    dark_brightness = brightness_config.get('dark_brightness')
 
     # 如果主题路径为空，使用默认路径
     if not light_theme_path:
@@ -147,6 +150,29 @@ def set_wallpaper_by_mode(mode):
         print(f"未能获取壁纸")
 
 
+# 设置屏幕亮度
+def set_brightness(brightness):
+    if brightness is None:
+        return
+    try:
+        cmd = f'Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightnessMethods | Invoke-CimMethod -MethodName WmiSetBrightness -Arguments @{{Timeout = 0; Brightness = {brightness}}}'
+        result = subprocess.run(
+            ['powershell', '-Command', cmd],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        if result.returncode == 0:
+            print(f"屏幕亮度已设置为 {brightness}")
+        else:
+            err_msg = result.stderr.strip()
+            print(f"设置屏幕亮度失败 (设备可能不支持屏幕亮度调节): {err_msg}")
+    except FileNotFoundError:
+        print("设置屏幕亮度失败: 未找到 PowerShell")
+    except Exception as e:
+        print(f"设置屏幕亮度失败: {e}")
+
+
 # 设置主题模式（light=True 切浅色，False 切深色）
 def set_theme(light=True):
     import winreg
@@ -159,18 +185,18 @@ def set_theme(light=True):
         mode = "light" if light else "dark"
         print(f"主题已切换为 {mode}")
         set_wallpaper_by_mode(mode)   # 同时切换壁纸
-        broadcast_setting_change()
-        time.sleep(1)
-        broadcast_setting_change()
     except Exception as e:
         print("切换主题失败:", e)
+        return
+
+    brightness = light_brightness if light else dark_brightness
+    set_brightness(brightness)
 
 
 # 根据时间决定期望模式
 def expected_mode_by_time():
     now = datetime.datetime.now(datetime.timezone.utc).astimezone().time()
     return "light" if sunrise_time <= now < sunset_time else "dark"
-
 
 
 # 当前主题文件路径不符合期望的时候切换

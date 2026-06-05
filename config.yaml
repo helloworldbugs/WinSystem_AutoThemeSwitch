@@ -21,3 +21,9 @@ Wallpaper_path:
   light_wallpaper_path: ''
   # 深色主题对应的壁纸路径，留空则从主题文件读取
   dark_wallpaper_path: ''
+
+Brightness:
+  # 浅色模式下的屏幕亮度 (0-100)，留空则不变更亮度
+  light_brightness: 
+  # 深色模式下的屏幕亮度 (0-100)，留空则不变更亮度
+  dark_brightness: 
