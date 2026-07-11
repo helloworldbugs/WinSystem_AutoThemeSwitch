@@ -11,11 +11,11 @@ import yaml
 
 pwd = os.getcwd()
 
-result = subprocess.run(['whoami'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='gbk')
-username = result.stdout.strip()
+result = subprocess.run(['whoami'], shell=True, capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+username = result.stdout.decode('utf-8', errors='replace').strip()
 
-result_sid = subprocess.run(['whoami', '/user'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='gbk')
-sid_line = result_sid.stdout.strip().split()[-1]
+result_sid = subprocess.run(['whoami', '/user'], shell=True, capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+sid_line = result_sid.stdout.decode('utf-8', errors='replace').strip().split()[-1]
 
 with open(r'config.yaml', 'r', encoding='utf-8') as f:
     config = yaml.safe_load(f)
@@ -48,18 +48,16 @@ def update_task_scheduler(sunrise, sunset):
     subprocess.run(
         'schtasks /delete /tn "AutoThemeSwitch\\mode_light" /f',
         shell=True,
-        stdout=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-        text=True,
-        encoding='gbk',
+        creationflags=subprocess.CREATE_NO_WINDOW,
     )
     subprocess.run(
         'schtasks /delete /tn "AutoThemeSwitch\\mode_dark" /f',
         shell=True,
-        stdout=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-        text=True,
-        encoding='gbk',
+        creationflags=subprocess.CREATE_NO_WINDOW,
     )
 
     def create_task(name, time, mode):
@@ -126,10 +124,9 @@ def update_task_scheduler(sunrise, sunset):
         subprocess.run(
             ["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"],
             shell=True,
-            stdout=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            text=True,
-            encoding='gbk',
+            creationflags=subprocess.CREATE_NO_WINDOW,
         )
 
         os.remove(temp_xml)

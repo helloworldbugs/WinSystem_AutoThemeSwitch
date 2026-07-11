@@ -96,15 +96,12 @@ def broadcast_setting_change():
 
 # 获取当前主题模式
 def get_current_mode():
+    import winreg
     try:
-        result = subprocess.run(
-            'reg query HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize /v AppsUseLightTheme',
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk'
-        )
-        if "0x1" in result.stdout:
-            return "light"
-        elif "0x0" in result.stdout:
-            return "dark"
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                            r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize") as key:
+            value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
+            return "light" if value == 1 else "dark"
     except Exception as e:
         print("获取当前主题失败:", e)
     return None
@@ -165,14 +162,13 @@ def set_brightness(brightness):
         cmd = f'Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightnessMethods | Invoke-CimMethod -MethodName WmiSetBrightness -Arguments @{{Timeout = 0; Brightness = {brightness}}}'
         result = subprocess.run(
             ['powershell', '-Command', cmd],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
+            capture_output=True,
+            creationflags=subprocess.CREATE_NO_WINDOW
         )
         if result.returncode == 0:
             print(f"屏幕亮度已设置为 {brightness}")
         else:
-            err_msg = result.stderr.strip()
+            err_msg = result.stderr.decode('utf-8', errors='replace').strip()
             print(f"设置屏幕亮度失败 (设备可能不支持屏幕亮度调节): {err_msg}")
     except FileNotFoundError:
         print("设置屏幕亮度失败: 未找到 PowerShell")
@@ -211,9 +207,14 @@ def theme_file_switch():
 
     # 获取当前主题路径
     def get_theme_path():
-        # 查询注册表当前模式
-        result = subprocess.run('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes" /v CurrentTheme',shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
-        current_theme_path = result.stdout.split()[-1]
+        # 使用 winreg 查询当前主题路径，避免 subprocess 编码问题
+        import winreg
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                r"Software\Microsoft\Windows\CurrentVersion\Themes") as key:
+                current_theme_path, _ = winreg.QueryValueEx(key, "CurrentTheme")
+        except Exception:
+            current_theme_path = ""
         expected_theme_path = light_theme_path if expected_mode_by_time() == "light" else dark_theme_path
         print('当前主题路径：',current_theme_path)
         print('期望主题路径：',expected_theme_path)
@@ -222,10 +223,19 @@ def theme_file_switch():
     def kill_settings_panel():
         print("正在检测设置面板是否已经关闭...")
         for _ in range(20):
-            result = subprocess.run('tasklist /fi "IMAGENAME eq SystemSettings.exe"', shell=True,stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
-            if "systemsettings.exe" in result.stdout.lower():
+            result = subprocess.run(
+                'tasklist /fi "IMAGENAME eq SystemSettings.exe"',
+                shell=True, capture_output=True,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+            output = result.stdout.decode('utf-8', errors='replace')
+            if "systemsettings.exe" in output.lower():
                 print("检测到设置面板，将其关闭…")
-                subprocess.run('taskkill /f /im "SystemSettings.exe"', shell=True,stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
+                subprocess.run(
+                    'taskkill /f /im "SystemSettings.exe"',
+                    shell=True, capture_output=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
             time.sleep(0.1)
 
     i = 0
@@ -237,7 +247,9 @@ def theme_file_switch():
             break
         else:
             print('主题文件路径不一致，切换主题文件')
-            subprocess.run('start ms-settings:', shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding='gbk')
+            subprocess.run('start ms-settings:', shell=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           creationflags=subprocess.CREATE_NO_WINDOW)
             time.sleep(0.5)
             os.startfile(get_theme_path()[1])
             broadcast_setting_change()

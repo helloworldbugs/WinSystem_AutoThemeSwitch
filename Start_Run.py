@@ -8,11 +8,11 @@ import SwitchTheme
 pwd = os.getcwd()
 
 # 获取用户名和 SID
-result = subprocess.run(['whoami'], capture_output=True, text=True, check=True, encoding='gbk')
-username = result.stdout.strip()
+result = subprocess.run(['whoami'], capture_output=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+username = result.stdout.decode('utf-8', errors='replace').strip()
 
-result_sid = subprocess.run(['whoami', '/user'], capture_output=True, text=True, check=True, encoding='gbk')
-sid_line = result_sid.stdout.strip().split()[-1]
+result_sid = subprocess.run(['whoami', '/user'], capture_output=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+sid_line = result_sid.stdout.decode('utf-8', errors='replace').strip().split()[-1]
 
 # 创建计划任务
 def create_SwitchTheme():
@@ -79,7 +79,7 @@ def create_SwitchTheme():
       temp_xml = f.name
 
   # 注册任务
-  subprocess.run(["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"], shell=True)
+  subprocess.run(["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"], shell=True, creationflags=subprocess.CREATE_NO_WINDOW)
 
   # 删除临时文件
   os.remove(temp_xml)
@@ -148,7 +148,7 @@ def create_Scheduler():
       temp_xml = f.name
 
   # 注册任务
-  subprocess.run(["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"], shell=True)
+  subprocess.run(["schtasks", "/Create", "/TN", task_name, "/XML", temp_xml, "/F"], shell=True, creationflags=subprocess.CREATE_NO_WINDOW)
 
   # 删除临时文件
   os.remove(temp_xml)
