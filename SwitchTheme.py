@@ -8,11 +8,23 @@ import configparser
 import subprocess
 import re
 import time
+import platform
 import Scheduler
 
 # 说明
 # 1. 直接执行，则按照当前时区的日出日落时间切换主题
 # 2. 带参数执行，则按照参数切换指定主题。参数格式：--mode light/dark
+
+
+# 检测是否 Windows 10（Win10 没有 dark.theme 主题文件，深色模式纯靠注册表）
+def is_win10():
+    ver = platform.version()
+    try:
+        build = int(ver.split('.')[2])
+        return build < 22000  # Win11 build 从 22000 开始
+    except (ValueError, IndexError):
+        return False
+
 
 # 获取当前用户名
 current_user = os.getlogin()
@@ -25,6 +37,9 @@ with open('config.yaml', 'r', encoding='utf-8') as f:
     dark_theme_path = config['Theme_path']['dark_theme_path']
     light_wallpaper_path = config['Wallpaper_path']['light_wallpaper_path']
     dark_wallpaper_path = config['Wallpaper_path']['dark_wallpaper_path']
+
+    # 记录用户是否配置了自定义主题（在展开和默认值之前）
+    user_configured_theme = bool(light_theme_path or dark_theme_path)
 
     # 展开环境变量（支持 %homepath%、%userprofile% 等）
     light_theme_path = os.path.expandvars(light_theme_path) if light_theme_path else ''
@@ -40,10 +55,11 @@ with open('config.yaml', 'r', encoding='utf-8') as f:
     dark_brightness = brightness_config.get('dark_brightness')
 
     # 如果主题路径为空，使用默认路径
+    # Win10 没有 dark.theme，深色模式纯靠注册表，主题文件仍用 aero.theme
     if not light_theme_path:
         light_theme_path = r'C:\Windows\Resources\Themes\aero.theme'
     if not dark_theme_path:
-        dark_theme_path = r'C:\Windows\Resources\Themes\dark.theme'
+        dark_theme_path = r'C:\Windows\Resources\Themes\aero.theme' if is_win10() else r'C:\Windows\Resources\Themes\dark.theme'
 
 if "Users" in light_theme_path and "AppData" in light_theme_path:
     light_theme_path = re.sub(r'(?<=\\Users\\)[^\\]+(?=\\AppData)', current_user, light_theme_path)
@@ -109,6 +125,11 @@ def get_current_mode():
 
 # 切换壁纸
 def set_wallpaper_by_mode(mode):
+
+    # Win10 且未配置壁纸路径 → 不碰壁纸
+    if is_win10() and not light_wallpaper_path and not dark_wallpaper_path:
+        print("Win10 未配置壁纸路径，跳过壁纸切换")
+        return
 
     # 从 .theme 文件读取壁纸路径
     def get_wallpaper_from_theme(theme_file):
@@ -204,6 +225,11 @@ def expected_mode_by_time():
 
 # 当前主题文件路径不符合期望的时候切换
 def theme_file_switch():
+
+    # Win10 且未配置自定义主题 → 深色模式纯靠注册表，无需切换主题文件
+    if is_win10() and not user_configured_theme:
+        print("Win10 未配置自定义主题，跳过主题文件切换")
+        return
 
     # 获取当前主题路径
     def get_theme_path():
